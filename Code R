@@ -1,6 +1,5 @@
 #### Statistiques Descriptives ####
-SD <- read.csv("Data.csv", header = TRUE, dec =",", sep = ",")
-summary(SD)
+SD <- read.csv(file.choose(), header = TRUE, dec =",", sep = ",")
 library(ggplot2)
 
 # exemple de donut plot avec Genre (à remplacer par Niveau pour M1/M2)
@@ -63,22 +62,25 @@ SurfacePlantes <- ggplot(SI, aes(x = Surface, y = Plantes)) + geom_point(color =
 ggsave("SurfacePlantes.svg", plot = SurfacePlantes, width = 10, height = 6, units = "in")
 
 #### Nombre de plantes en fonction Parcours ####
-resPar <- aov(Plantes ~ Parcours, data = SI) # ANOVA
-summary(resPar)
-shapiro.test(residuals(resPar)) # p-value = 2.504e-11, rejet H0, condition de normalité non remplie
+table(SI$Parcours) # n compris entre 10 & 24 par parcours donc on teste la normalité des échantillons
+by(SI$Plantes, SI$Parcours, shapiro.test) # toutes les p-values (sauf EEVEF & ECIRE) < 0.05 donc non-normalité des échantillons & tests non-paramétriques
 kruskal.test(Plantes ~ Parcours, data = SI) # p-value = 0.2484 donc non rejet de H0, pas de différence significative entre parcours
 
 #### Nombre de plantes en fonction Genres ####
-resGen <- aov(Plantes ~ Genre, data = SI) # ANOVA
-summary(resGen)
-shapiro.test(residuals(resGen)) # p-value = 8.524e-14, rejet H0, condition de normalité non remplie
+table(SI$Genre) # n(Autre) = 3, n(Homme) = 25 donc on teste la normalité des échantillons
+by(SI$Plantes, SI$Genre, shapiro.test) # toutes les p-values < 0.05 donc non-normalité des échantillons & tests non-paramétriques
 kruskal.test(Plantes ~ Genre, data = SI) # p-value = 0.6732 donc non rejet de H0, pas de différence significative entre genres 
 
 #### Nombre de plantes en fonction Niveau ####
-var.test(Plantes ~ Niveau, data = SI) # p-value = 0.04204 donc rejet de H0, les variances sont inégales
-t.test(Plantes ~ Niveau, data = SI, var.equal = FALSE) # p-value = 0.3833 donc non rejet de H0, pas de différence significative
+table(SI$Niveau) # n(M2)= 28 donc on teste la normalité des échantillons
+by(SI$Plantes, SI$Niveau, shapiro.test) # toutes les p-values < 0.05 donc non-normalité des échantillons & tests non-paramétriques
+wilcox.test(Plantes~Niveau, data= SI) # p-value = 0.1797, non-rejet de H0, pas de différence significative entre Niveau 
+
 
 #### Nombre de plantes en fonction du fype de foyer ####
+table(SI$Habitat) # n(Colocation)= 16, n(Parents)= 22 donc on teste la normalité des échantillons
+by(SI$Plantes, SI$Habitat, shapiro.test) # toutes les p-values < 0.05 donc non-normalité des échantillons & tests non-paramétriques
+kruskal.test(Plantes ~ Habitat, data = SI) # p-value = 0.2311 donc non rejet de H0, pas de différence significative entre types de foyer 
 resHab <- aov(Plantes ~ Habitat, data = SI) # ANOVA
 summary(resHab)
 shapiro.test(residuals(resHab)) # p-value = 4.234e-13, rejet H0, condition de normalité non remplie
